@@ -293,6 +293,10 @@ function TodayRow({ occurrence }: { occurrence: OccurrenceDTO }) {
             </span>
           ) : null}
         </div>
+
+        {occurrence.notes.trim() ? (
+          <p className="board-event-notes">{occurrence.notes.trim()}</p>
+        ) : null}
       </div>
     </article>
   );
