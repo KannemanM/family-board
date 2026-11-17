@@ -244,6 +244,7 @@
   display: flex;
   min-height: 100dvh;
   flex-direction: column;
+  justify-content: center;
   gap: clamp(0.8rem, 1.3vw, 1.5rem);
   padding: clamp(0.9rem, 1.8vw, 2.4rem);
   max-width: 2600px;
@@ -257,11 +258,26 @@
   align-items: start;
 }
 
-.board-content {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.9rem, 1.4vw, 1.7rem);
-  margin-block: auto;
+@media (min-width: 1024px) {
+  .board-grid {
+    flex: 1;
+    grid-auto-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .board-today {
+    min-height: 0;
+  }
+
+  .board-events {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .board-event {
+    flex: 1 1 0;
+    min-height: 5rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -276,60 +292,395 @@
   }
 }
 
+.board-head {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1vw, 1rem);
+}
+
+@media (min-width: 640px) {
+  .board-head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.board-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
 .board-clock {
-  font-size: clamp(2.6rem, 3.4vw + 0.4rem, 5.8rem);
-  line-height: 0.95;
+  font-size: clamp(2.9rem, 4.2vw + 0.6rem, 6.5rem);
+  line-height: 0.9;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
+  color: var(--color-ink);
 }
 
-.board-date {
-  font-size: clamp(1.15rem, 1vw + 0.45rem, 2rem);
-  line-height: 1.15;
-}
-
-.board-item-title {
-  font-size: clamp(0.98rem, 0.52vw + 0.55rem, 1.5rem);
-  line-height: 1.25;
-}
-
-.board-time {
-  font-size: clamp(0.82rem, 0.36vw + 0.55rem, 1.1rem);
+.board-clock-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   font-variant-numeric: tabular-nums;
+}
+
+.board-offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  background: rgba(185, 59, 43, 0.12);
+  color: var(--color-urgent);
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-.board-day-title {
-  font-size: clamp(0.95rem, 0.42vw + 0.6rem, 1.35rem);
+.board-family {
+  font-size: clamp(0.62rem, 0.3vw + 0.45rem, 0.72rem);
+  font-weight: 800;
+  color: var(--color-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.board-meta {
-  font-size: clamp(0.72rem, 0.26vw + 0.5rem, 0.95rem);
+.board-date {
+  font-size: clamp(1.9rem, 2.4vw + 0.5rem, 3.6rem);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.board-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.board-member-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: clamp(0.78rem, 0.35vw + 0.55rem, 0.95rem);
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+}
+
+.board-member-pill-dark {
+  background: #232720;
+}
+
+.board-section-label {
+  font-size: clamp(0.78rem, 0.35vw + 0.55rem, 0.92rem);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  margin-bottom: 0.5rem;
+}
+
+/* --- Today events --- */
+.board-today,
+.board-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.board-events {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.6vw, 2rem);
+}
+
+.board-event {
+  display: flex;
+  align-items: stretch;
+  border-radius: 1.15rem;
+  overflow: hidden;
+  background: var(--color-card);
+  box-shadow:
+    0 1px 2px rgba(34, 38, 31, 0.06),
+    0 20px 40px -30px rgba(34, 38, 31, 0.4);
+}
+
+.board-event-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(5.5rem, 10vw, 10.5rem);
+  flex-shrink: 0;
+  color: #fff;
+  font-size: clamp(1.15rem, 1.4vw + 0.4rem, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.05;
+  padding: 0.4rem;
+  border-radius: 1.15rem 0 0 1.15rem;
+}
+
+.board-event-time[data-allday="true"] {
+  font-size: clamp(0.9rem, 0.9vw + 0.35rem, 1.2rem);
+  line-height: 1.15;
+  padding: 0.4rem 0.25rem;
+}
+
+.board-event-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1rem 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.board-event-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.board-event-title {
+  font-size: clamp(1.05rem, 1.1vw + 0.45rem, 1.7rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+.board-event-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.board-event-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: clamp(0.78rem, 0.4vw + 0.55rem, 0.95rem);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.board-priority {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: clamp(0.68rem, 0.3vw + 0.5rem, 0.78rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.board-priority-high {
+  color: var(--color-high);
+  background: var(--color-high-soft);
+}
+
+.board-priority-urgent {
+  color: var(--color-urgent);
+  background: var(--color-urgent-soft);
+}
+
+/* --- Featured (dark) card --- */
+.board-featured {
+  background: #232720;
+  border-radius: 1.35rem;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.board-featured-eyebrow {
+  font-size: clamp(0.7rem, 0.35vw + 0.55rem, 0.82rem);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #e6c9a1;
+}
+
+.board-featured-title {
+  font-size: clamp(1.35rem, 1.5vw + 0.5rem, 2.1rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.board-featured-meta {
+  font-size: clamp(0.82rem, 0.45vw + 0.55rem, 1rem);
+  font-weight: 500;
+  color: #e8e4d9;
+}
+
+/* --- Upcoming day cards --- */
+.board-days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.board-day {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-card);
+  border-radius: 1rem;
+  padding: 0.55rem 0.75rem;
+  box-shadow:
+    0 1px 2px rgba(34, 38, 31, 0.06),
+    0 18px 30px -28px rgba(34, 38, 31, 0.4);
+}
+
+.board-day-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 2.6rem;
+}
+
+.board-day-dow {
+  font-size: clamp(0.6rem, 0.3vw + 0.45rem, 0.7rem);
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.board-day-num {
+  font-size: clamp(1.2rem, 0.9vw + 0.7rem, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-ink);
+}
+
+.board-day-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.board-day-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.board-day-item-title {
+  font-size: clamp(0.85rem, 0.65vw + 0.5rem, 1.1rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+
+.board-day-item-meta {
+  font-size: clamp(0.72rem, 0.4vw + 0.45rem, 0.88rem);
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.board-day-more {
+  font-size: clamp(0.7rem, 0.4vw + 0.45rem, 0.85rem);
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+/* --- Empty states --- */
+.board-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 1.15rem;
+  background: var(--color-card);
+  padding: 2.2rem 1.5rem;
+  text-align: center;
+}
+
+.board-empty-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+.board-empty-text {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  max-width: 22rem;
 }
 
 @media (min-width: 1440px) {
   .board-clock {
-    font-size: clamp(4rem, 4.6vw, 7.2rem);
+    font-size: clamp(4.5rem, 5.4vw, 7.5rem);
   }
 
   .board-date {
-    font-size: clamp(1.55rem, 1.1vw + 0.55rem, 2.4rem);
+    font-size: clamp(2.6rem, 2.7vw + 0.6rem, 4.2rem);
   }
 
-  .board-item-title {
-    font-size: clamp(1.1rem, 0.75vw + 0.45rem, 1.85rem);
+  .board-event-time {
+    font-size: clamp(1.4rem, 1.7vw + 0.5rem, 2.3rem);
   }
 
-  .board-time {
-    font-size: clamp(0.92rem, 0.45vw + 0.5rem, 1.25rem);
+  .board-event-time[data-allday="true"] {
+    font-size: clamp(1rem, 1.05vw + 0.4rem, 1.3rem);
   }
 
-  .board-day-title {
-    font-size: clamp(1.05rem, 0.45vw + 0.6rem, 1.5rem);
+  .board-event-title {
+    font-size: clamp(1.3rem, 1.35vw + 0.5rem, 2rem);
   }
 
-  .board-meta {
-    font-size: clamp(0.82rem, 0.28vw + 0.55rem, 1.05rem);
+  .board-event-category,
+  .board-member-pill {
+    font-size: clamp(0.85rem, 0.42vw + 0.6rem, 1.02rem);
+  }
+
+  .board-event-body {
+    padding: 0.9rem 1.2rem 0.8rem;
+  }
+
+  .board-featured-title {
+    font-size: clamp(1.5rem, 1.85vw + 0.5rem, 2.4rem);
+  }
+
+  .board-day-num {
+    font-size: clamp(1.35rem, 1.05vw + 0.75rem, 2rem);
+  }
+
+  .board-day-item-title {
+    font-size: clamp(0.95rem, 0.75vw + 0.55rem, 1.25rem);
+  }
+
+  .board-day-item-meta {
+    font-size: clamp(0.78rem, 0.42vw + 0.5rem, 0.95rem);
   }
 }
 

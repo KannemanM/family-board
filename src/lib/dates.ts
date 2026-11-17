@@ -149,6 +149,19 @@ export function formatWeekdayLong(date: string): string {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
+export function formatWeekdayShort(date: string): string {
+  const formatted = new Intl.DateTimeFormat("es-AR", {
+    timeZone: "UTC",
+    weekday: "short",
+  })
+    .format(new Date(`${date}T12:00:00.000Z`))
+    .replace(/\./g, "");
+  return formatted
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase();
+}
+
 export function formatDayNumber(date: string): string {
   return String(Number(date.slice(8, 10)));
 }

@@ -164,6 +164,18 @@ try {
     priority: "Importante",
   });
 
+  // Futura con recordatorio activo: alimenta la tarjeta destacada del tablero.
+  await fillActivity({
+    title: "Examen de Matemática",
+    date: isoDate(1),
+    allDay: false,
+    startTime: "09:00",
+    member: /^Ana/,
+    category: "Escuela",
+    priority: "Importante",
+    reminder: "1 día antes",
+  });
+
   await fillActivity({
     title: "Clase de natación",
     date: isoDate(5),
@@ -295,11 +307,16 @@ try {
   await plumberRow
     .getByRole("button", { name: "Sí, eliminar", exact: true })
     .click();
-  await page.waitForTimeout(900);
-  check(
-    "la actividad eliminada desaparece de la agenda",
-    (await page.getByText("Llamar al plomero").count()) === 0,
-  );
+
+  let gone = false;
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    if ((await page.getByText("Llamar al plomero").count()) === 0) {
+      gone = true;
+      break;
+    }
+    await page.waitForTimeout(600);
+  }
+  check("la actividad eliminada desaparece de la agenda", gone);
 
   const boardAfterDelete = await context.request.get(
     `${BASE}/api/board?token=${token}`,
@@ -331,9 +348,13 @@ try {
   await todayGuitar
     .getByRole("button", { name: "Sí, eliminar", exact: true })
     .click();
-  await page.waitForTimeout(900);
 
-  const guitarAfter = await guitarCards.count();
+  let guitarAfter = guitarBefore;
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    guitarAfter = await guitarCards.count();
+    if (guitarAfter === guitarBefore - 1) break;
+    await page.waitForTimeout(600);
+  }
   check(
     "solo se elimina la fecha elegida de la repetición",
     guitarAfter === guitarBefore - 1,
@@ -358,11 +379,16 @@ try {
     .first();
   check("el historial lista la actividad pasada", (await historyRow.count()) === 1);
   await historyRow.getByRole("button", { name: "Marcar como completada" }).click();
-  await page.waitForTimeout(900);
-  check(
-    "la actividad queda marcada como lista",
-    (await page.getByText("Lista").count()) > 0,
-  );
+
+  let marked = false;
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    if ((await page.getByText("Lista").count()) > 0) {
+      marked = true;
+      break;
+    }
+    await page.waitForTimeout(600);
+  }
+  check("la actividad queda marcada como lista", marked);
   await shot("09-historial", { fullPage: true });
 
   // Agregar dos más al historial para ver densidad

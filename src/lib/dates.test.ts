@@ -4,6 +4,7 @@ import {
   addDays,
   diffDays,
   formatDateLong,
+  formatWeekdayShort,
   todayInTimeZone,
   weekdayIndex,
   zonedToUtcMs,
@@ -48,5 +49,12 @@ describe("date helpers", () => {
 
   it("formats long dates in Spanish without a comma", () => {
     expect(formatDateLong("2026-11-17")).toBe("Martes 17 de noviembre");
+  });
+
+  it("formats short weekday", () => {
+    expect(formatWeekdayShort("2026-11-16")).toBe("LUN");
+    expect(formatWeekdayShort("2026-11-17")).toBe("MAR");
+    expect(formatWeekdayShort("2026-11-18")).toBe("MIE");
+    expect(formatWeekdayShort("2026-11-22")).toBe("DOM");
   });
 });
