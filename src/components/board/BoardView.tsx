@@ -171,7 +171,7 @@ export function BoardView({
 
           {todayItems.length === 0 ? (
             <div className="board-empty">
-              <p className="board-empty-title">Día despejado</p>
+              <p className="board-empty-title">Todo tranquilo</p>
               <p className="board-empty-text">
                 No hay actividades para hoy. Disfrutá el día.
               </p>
