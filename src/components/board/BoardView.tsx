@@ -1,6 +1,15 @@
 "use client";
 
-import { Bell, Repeat, WifiOff } from "lucide-react";
+import {
+  Bell,
+  Cloud,
+  CloudLightning,
+  CloudRain,
+  CloudSun,
+  Repeat,
+  Sun,
+  WifiOff,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -14,6 +23,14 @@ import {
 } from "@/lib/dates";
 import type { BoardData, OccurrenceDTO } from "@/lib/types";
 import { PRIORITY_LABELS } from "@/lib/types";
+
+function getDayGreeting(hour: string): string {
+  const hourNumber = Number(hour);
+
+  if (hourNumber >= 5 && hourNumber < 12) return "Buenos días familia!";
+  if (hourNumber >= 12 && hourNumber < 20) return "Buenas tardes familia!";
+  return "Buenas noches familia!";
+}
 
 export function BoardView({
   initial,
@@ -29,6 +46,7 @@ export function BoardView({
   }));
   const [now, setNow] = useState(() => new Date(initial.generatedAt).getTime());
   const [online, setOnline] = useState(true);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -80,6 +98,22 @@ export function BoardView({
     };
   }, [refresh, data.refreshSeconds]);
 
+  useEffect(() => {
+    const loadWeather = async () => {
+      try {
+        const response = await fetch("/api/weather", { cache: "no-store" });
+        if (!response.ok) return;
+        setWeather((await response.json()) as WeatherData);
+      } catch {
+        // Keep the last known weather visible when refresh fails.
+      }
+    };
+
+    void loadWeather();
+    const interval = window.setInterval(loadWeather, 10 * 60 * 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const today = todayInTimeZone(data.timezone, new Date(now));
   const clock = getClockParts(now, data.timezone);
 
@@ -98,7 +132,7 @@ export function BoardView({
     <div className="board-shell">
       <header className="board-head">
         <div className="board-head-main">
-          <p className="board-family">{data.familyName}</p>
+          <p className="board-family">{getDayGreeting(clock.hours)}</p>
           <h1 className="board-date">{formatDateLong(today)}</h1>
 
           {data.members.length > 0 ? (
@@ -127,12 +161,24 @@ export function BoardView({
               Sin conexión
             </span>
           ) : null}
+          {weather ? (
+            <div
+              className="board-weather"
+              aria-label={`${weather.temperature} grados Celsius en San Luis`}
+            >
+              <WeatherIcon weather={weather} />
+              <div>
+                <strong>{weather.temperature}°</strong>
+                <span>San Luis</span>
+              </div>
+            </div>
+          ) : null}
           <span
             className="board-clock"
             role="timer"
-            aria-label={`Son las ${clock.hours} con ${clock.minutes}`}
+            aria-label={`Son las ${clock.hours} con ${clock.minutes} y ${clock.seconds} segundos`}
           >
-            {clock.hours}:{clock.minutes}
+            {clock.hours}:{clock.minutes}:{clock.seconds}
           </span>
         </div>
       </header>
@@ -336,5 +382,32 @@ function UpcomingRow({
         {hidden > 0 ? <p className="board-day-more">+ {hidden} más</p> : null}
       </div>
     </article>
+  );
+}
+
+interface WeatherData {
+  temperature: number;
+  code: number;
+  isDay: boolean;
+}
+
+function WeatherIcon({ weather }: { weather: WeatherData }) {
+  if (weather.code >= 95) {
+    return <CloudLightning className="board-weather-icon" aria-hidden />;
+  }
+  if (weather.code >= 51) {
+    return <CloudRain className="board-weather-icon" aria-hidden />;
+  }
+  if (weather.code >= 1) {
+    return weather.isDay ? (
+      <CloudSun className="board-weather-icon" aria-hidden />
+    ) : (
+      <Cloud className="board-weather-icon" aria-hidden />
+    );
+  }
+  return weather.isDay ? (
+    <Sun className="board-weather-icon" aria-hidden />
+  ) : (
+    <Cloud className="board-weather-icon" aria-hidden />
   );
 }

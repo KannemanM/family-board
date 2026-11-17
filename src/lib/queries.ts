@@ -38,7 +38,8 @@ import type {
 } from "@/lib/types";
 import { PRIORITY_WEIGHT } from "@/lib/types";
 
-export const BOARD_DAYS = 7;
+export const BOARD_DAYS = 365;
+export const BOARD_UPCOMING_LIMIT = 6;
 
 export function getMembersList(includeInactive = false): MemberRow[] {
   const query = db.select().from(members);
@@ -258,14 +259,19 @@ export function getBoardData(now: Date = new Date()): BoardData {
     })
     .slice(0, 4);
 
-  const days: BoardDay[] = [];
-  for (let index = 0; index < BOARD_DAYS; index += 1) {
-    const date = addDays(today, index);
-    days.push({
+  const todayItems = occurrences.filter((occurrence) => occurrence.date === today);
+  const upcomingItems = occurrences
+    .filter((occurrence) => occurrence.date > today)
+    .slice(0, BOARD_UPCOMING_LIMIT);
+
+  const upcomingDates = [...new Set(upcomingItems.map((item) => item.date))];
+  const days: BoardDay[] = [
+    { date: today, items: todayItems },
+    ...upcomingDates.map((date) => ({
       date,
-      items: occurrences.filter((occurrence) => occurrence.date === date),
-    });
-  }
+      items: upcomingItems.filter((occurrence) => occurrence.date === date),
+    })),
+  ];
 
   return {
     generatedAt: now.toISOString(),
@@ -273,8 +279,8 @@ export function getBoardData(now: Date = new Date()): BoardData {
     timezone: settings.timezone,
     familyName: settings.familyName,
     refreshSeconds: settings.refreshSeconds,
-    members: getMembersList().map(toMemberDTO),
-    categories: getCategoriesList().map(toCategoryDTO),
+    members: getMembersList(true).map(toMemberDTO),
+    categories: getCategoriesList(true).map(toCategoryDTO),
     highlights,
     days,
   };
