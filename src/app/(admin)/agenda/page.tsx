@@ -66,7 +66,9 @@ export default async function AgendaPage({
   const from = isHistory ? addDays(today, -60) : today;
   const to = isHistory ? addDays(today, -1) : addDays(today, 30);
 
-  let occurrences = getOccurrences(from, to);
+  let occurrences = getOccurrences(from, to).filter(
+    (occurrence) => occurrence.state !== "cancelled",
+  );
 
   if (memberFilter) {
     occurrences = occurrences.filter(
@@ -82,9 +84,7 @@ export default async function AgendaPage({
       : a.date.localeCompare(b.date),
   );
 
-  const total = occurrences.filter(
-    (occurrence) => occurrence.state !== "cancelled",
-  ).length;
+  const total = occurrences.length;
   const firstName = user.name.split(" ")[0];
 
   const hrefFor = (options: { history?: boolean; memberId?: number }) => {

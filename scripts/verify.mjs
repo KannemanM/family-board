@@ -116,7 +116,10 @@ try {
     await page.getByRole("button", { name: "Agregar", exact: true }).click();
     await page.fill("#member-name", name);
     await page.getByRole("button", { name: "Guardar", exact: true }).click();
-    await page.waitForTimeout(600);
+    await page
+      .locator("ul.card li", { hasText: name })
+      .first()
+      .waitFor({ timeout: 15000 });
   }
   check(
     "se crean los dos integrantes",
@@ -275,46 +278,77 @@ try {
   }
   check("el tablero se actualiza solo (polling)", polled);
 
-  // ---------- 7. Cancelar y reactivar una fecha ----------
+  // ---------- 7. Eliminar una actividad y una fecha recurrente ----------
   await page.goto(`${BASE}/agenda`, { waitUntil: "networkidle" });
-  const cancelRow = page
-    .locator("div.card", { hasText: "Llamar al plomero" })
-    .first();
-  await cancelRow.getByRole("button", { name: "Cancelar esta fecha", exact: true }).click();
-  await cancelRow.getByRole("button", { name: "Cancelar fecha", exact: true }).click();
-  await page.waitForTimeout(900);
 
-  const cancelledRow = page
+  const plumberRow = page
     .locator("div.card", { hasText: "Llamar al plomero" })
     .first();
   check(
-    "la fecha cancelada queda visible en la agenda",
-    (await cancelledRow.getByText("Cancelada").count()) > 0,
+    "la actividad de una sola vez está en la agenda",
+    (await plumberRow.count()) === 1,
   );
-
-  const boardAfterCancel = await context.request.get(
-    `${BASE}/api/board?token=${token}`,
-  );
-  const cancelJson = await boardAfterCancel.json();
-  const titlesAfterCancel = cancelJson.days.flatMap((day) =>
-    day.items.map((item) => item.title),
-  );
-  check(
-    "la fecha cancelada no aparece en el tablero",
-    !titlesAfterCancel.includes("Llamar al plomero"),
-  );
-
-  await cancelledRow
-    .getByRole("button", { name: "Reactivar esta fecha" })
+  await plumberRow
+    .getByRole("button", { name: "Eliminar", exact: true })
+    .click();
+  await shot("08b-confirmar-eliminacion");
+  await plumberRow
+    .getByRole("button", { name: "Sí, eliminar", exact: true })
     .click();
   await page.waitForTimeout(900);
   check(
-    "la fecha se puede reactivar",
-    (await page
-      .locator("div.card", { hasText: "Llamar al plomero" })
-      .first()
-      .getByText("Cancelada")
-      .count()) === 0,
+    "la actividad eliminada desaparece de la agenda",
+    (await page.getByText("Llamar al plomero").count()) === 0,
+  );
+
+  const boardAfterDelete = await context.request.get(
+    `${BASE}/api/board?token=${token}`,
+  );
+  const deleteJson = await boardAfterDelete.json();
+  check(
+    "la actividad eliminada no aparece en el tablero",
+    !deleteJson.days[0].items.some((item) => item.title === "Llamar al plomero"),
+  );
+
+  const guitarCards = page.locator("div.card", {
+    hasText: "Clase de guitarra",
+  });
+  const guitarBefore = await guitarCards.count();
+  check(
+    "la actividad recurrente tiene varias fechas",
+    guitarBefore >= 2,
+    `cards=${guitarBefore}`,
+  );
+
+  const todayGuitar = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: "Hoy", exact: true }) })
+    .locator("div.card", { hasText: "Clase de guitarra" })
+    .first();
+  await todayGuitar
+    .getByRole("button", { name: "Eliminar", exact: true })
+    .click();
+  await todayGuitar
+    .getByRole("button", { name: "Sí, eliminar", exact: true })
+    .click();
+  await page.waitForTimeout(900);
+
+  const guitarAfter = await guitarCards.count();
+  check(
+    "solo se elimina la fecha elegida de la repetición",
+    guitarAfter === guitarBefore - 1,
+    `cards=${guitarAfter}`,
+  );
+
+  const boardAfterRecurring = await context.request.get(
+    `${BASE}/api/board?token=${token}`,
+  );
+  const recurringJson = await boardAfterRecurring.json();
+  check(
+    "la fecha recurrente eliminada no aparece en el tablero",
+    !recurringJson.days[0].items.some(
+      (item) => item.title === "Clase de guitarra",
+    ),
   );
 
   // ---------- 8. Completar e historial ----------
@@ -361,7 +395,7 @@ try {
   const itemCount = await emptyBoard
     .locator("section[aria-label='Actividades de hoy'] article")
     .count();
-  check("el tablero cuenta las actividades de hoy", itemCount >= 3, `items=${itemCount}`);
+  check("el tablero sigue mostrando actividades de hoy", itemCount >= 2, `items=${itemCount}`);
   await emptyBoard.close();
 
   // ---------- 11. Acceso inválido ----------

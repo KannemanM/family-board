@@ -8,8 +8,7 @@ import {
   Loader2,
   Pencil,
   Repeat,
-  RotateCcw,
-  XCircle,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,7 +16,10 @@ import { useState, useTransition } from "react";
 
 import { MemberAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
-import { setOccurrenceStateAction } from "@/lib/actions/activities";
+import {
+  deleteActivityAction,
+  setOccurrenceStateAction,
+} from "@/lib/actions/activities";
 import { reminderLabel } from "@/lib/labels";
 import type { OccurrenceDTO } from "@/lib/types";
 
@@ -25,10 +27,9 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const completed = occurrence.state === "completed";
-  const cancelled = occurrence.state === "cancelled";
 
   const timeLabel = occurrence.allDay
     ? "Todo el día"
@@ -38,7 +39,7 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
         : occurrence.startTime
       : "Sin horario";
 
-  function updateState(state: "active" | "completed" | "cancelled") {
+  function updateState(state: "active" | "completed") {
     setError(null);
     startTransition(async () => {
       const result = await setOccurrenceStateAction(
@@ -51,7 +52,26 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
         setError(result.error ?? "No se pudo guardar");
         return;
       }
-      setConfirmCancel(false);
+      router.refresh();
+    });
+  }
+
+  function remove() {
+    setError(null);
+    startTransition(async () => {
+      const result = occurrence.recurring
+        ? await setOccurrenceStateAction(
+            occurrence.activityId,
+            occurrence.date,
+            "cancelled",
+          )
+        : await deleteActivityAction(occurrence.activityId);
+
+      if (!result.ok) {
+        setError(result.error ?? "No se pudo eliminar");
+        return;
+      }
+      setConfirmDelete(false);
       router.refresh();
     });
   }
@@ -64,11 +84,7 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
 
   return (
     <div>
-      <div
-        className={`card flex items-stretch gap-0 overflow-hidden transition-opacity ${
-          cancelled ? "opacity-60" : ""
-        }`}
-      >
+      <div className="card flex items-stretch gap-0 overflow-hidden">
         <span
           className="w-1.5 shrink-0"
           style={{ backgroundColor: accent }}
@@ -89,9 +105,7 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
 
             <span
               className={`text-[15px] font-medium leading-snug ${
-                completed || cancelled
-                  ? "text-muted line-through decoration-1"
-                  : "text-ink"
+                completed ? "text-muted line-through decoration-1" : "text-ink"
               }`}
             >
               {occurrence.title}
@@ -111,12 +125,6 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-brand">
                 <CircleCheck className="h-3.5 w-3.5" aria-hidden />
                 Lista
-              </span>
-            ) : null}
-            {cancelled ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted">
-                <XCircle className="h-3.5 w-3.5" aria-hidden />
-                Cancelada
               </span>
             ) : null}
           </div>
@@ -178,22 +186,22 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
         </Link>
 
         <div className="flex items-center gap-1 pr-2.5 sm:pr-3">
-          {confirmCancel ? (
+          {confirmDelete ? (
             <>
               <button
                 type="button"
-                onClick={() => updateState("cancelled")}
+                onClick={remove}
                 disabled={pending}
                 className="btn btn-danger h-8 px-2 text-[11px]"
               >
                 {pending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                 ) : null}
-                Cancelar fecha
+                Sí, eliminar
               </button>
               <button
                 type="button"
-                onClick={() => setConfirmCancel(false)}
+                onClick={() => setConfirmDelete(false)}
                 disabled={pending}
                 className="btn btn-secondary h-8 px-2 text-[11px]"
               >
@@ -202,62 +210,43 @@ export function AgendaRow({ occurrence }: { occurrence: OccurrenceDTO }) {
             </>
           ) : (
             <>
-              {cancelled ? (
-                <button
-                  type="button"
-                  onClick={() => updateState("active")}
-                  disabled={pending}
-                  aria-label="Reactivar esta fecha"
-                  title="Reactivar esta fecha"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-white text-muted transition-colors hover:border-brand hover:text-brand"
-                >
-                  {pending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                  ) : (
-                    <RotateCcw className="h-4 w-4" aria-hidden />
-                  )}
-                </button>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={toggleComplete}
-                    disabled={pending}
-                    aria-label={
-                      completed
-                        ? "Marcar como pendiente"
-                        : "Marcar como completada"
-                    }
-                    title={
-                      completed
-                        ? "Marcar como pendiente"
-                        : "Marcar como completada"
-                    }
-                    className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                      completed
-                        ? "border-brand bg-brand text-white"
-                        : "border-line-strong bg-white text-muted hover:border-brand hover:text-brand"
-                    }`}
-                  >
-                    {pending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                    ) : (
-                      <Check className="h-4 w-4" strokeWidth={2.4} aria-hidden />
-                    )}
-                  </button>
+              <button
+                type="button"
+                onClick={toggleComplete}
+                disabled={pending}
+                aria-label={
+                  completed ? "Marcar como pendiente" : "Marcar como completada"
+                }
+                title={
+                  completed ? "Marcar como pendiente" : "Marcar como completada"
+                }
+                className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  completed
+                    ? "border-brand bg-brand text-white"
+                    : "border-line-strong bg-white text-muted hover:border-brand hover:text-brand"
+                }`}
+              >
+                {pending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Check className="h-4 w-4" strokeWidth={2.4} aria-hidden />
+                )}
+              </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setConfirmCancel(true)}
-                    disabled={pending}
-                    aria-label="Cancelar esta fecha"
-                    title="Cancelar esta fecha"
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-white text-muted transition-colors hover:border-urgent hover:text-urgent"
-                  >
-                    <XCircle className="h-4 w-4" aria-hidden />
-                  </button>
-                </>
-              )}
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                disabled={pending}
+                aria-label="Eliminar"
+                title={
+                  occurrence.recurring
+                    ? "Eliminar esta fecha"
+                    : "Eliminar actividad"
+                }
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-white text-muted transition-colors hover:border-urgent hover:text-urgent"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+              </button>
 
               <Link
                 href={`/agenda/${occurrence.activityId}`}

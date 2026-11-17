@@ -107,7 +107,10 @@ restaurar se usa el archivo SQLite.
 - **Actividades**: título, fecha, todo el día u horario, categoría, una o
   varias personas (o toda la familia), prioridad, notas y recordatorio visual.
 - **Repeticiones**: diaria, semanal (con días), mensual o anual, con intervalo
-  y fecha de fin. Cada ocurrencia se puede completar o cancelar por separado.
+  y fecha de fin. Cada ocurrencia se puede completar o eliminar por separado.
+- **Eliminar**: en una actividad que se repite se quita solo esa fecha; en una
+  de una sola vez se borra la actividad completa. No hay forma de recuperarla
+  desde la agenda.
 - **Historial**: últimos 60 días, incluyendo lo completado.
 - **Recordatorios visuales**: cuando falta el tiempo indicado, la actividad se
   destaca arriba del tablero y aparece con un ícono en la agenda. No hay
