@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+data
+.git
+.gitignore
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+tsconfig.tsbuildinfo
+coverage
+scripts/verify.mjs

@@ -1,0 +1,17 @@
+services:
+  familyboard:
+    build: .
+    container_name: familyboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_PATH: /data/familyboard.db
+      TZ: America/Argentina/Buenos_Aires
+      # Poné "true" cuando el tablero se abra por HTTPS.
+      COOKIE_SECURE: "false"
+    volumes:
+      - familyboard-data:/data
+
+volumes:
+  familyboard-data:
