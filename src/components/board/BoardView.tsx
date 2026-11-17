@@ -134,24 +134,6 @@ export function BoardView({
         <div className="board-head-main">
           <p className="board-family">{getDayGreeting(clock.hours)}</p>
           <h1 className="board-date">{formatDateLong(today)}</h1>
-
-          {data.members.length > 0 ? (
-            <div className="board-members" aria-label="Integrantes">
-              {data.members.map((member) => (
-                <span
-                  key={member.id}
-                  className="board-member-pill"
-                  style={{ backgroundColor: member.color }}
-                  title={member.name}
-                >
-                  {member.emoji?.trim() ? (
-                    <span aria-hidden>{member.emoji}</span>
-                  ) : null}
-                  {member.name}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </div>
 
         <div className="board-clock-wrap">
