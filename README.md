@@ -22,7 +22,7 @@ cp .env.example .env.local   # opcional, hay valores por defecto
 npm run dev
 ```
 
-Abrí <http://localhost:3000>. La primera vez aparece el asistente de
+Abrí <http://localhost:3100>. La primera vez aparece el asistente de
 configuración: nombre de la familia, zona horaria y las dos cuentas de
 administración. Al terminar, el tablero ya tiene su dirección privada, que se
 copia desde **Ajustes → Pantalla del tablero**.
@@ -46,6 +46,10 @@ npm run db:generate   # nueva migración tras cambiar el esquema
 
 La zona horaria que usa el tablero se configura dentro de la app, en
 **Ajustes**. `TZ` solo afecta los logs del contenedor.
+
+En desarrollo, FamilyBoard usa el puerto **3100** (`npm run dev`) para no chocar
+con otras aplicaciones locales que ocupen el 3000. En Docker el contenedor
+sigue escuchando en 3000, mapeado al puerto que elijas en el servidor.
 
 ## Docker
 
